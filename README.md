@@ -1,5 +1,7 @@
 # Callot
 
+![callot overview](docs/callot.png)
+
 Callot is a command line application for calculating trading lot sizes based on
 predefined risk settings. It stores its configuration in
 `~/.config/callot/config.json` and provides a simple interactive interface as
