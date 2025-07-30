@@ -1,6 +1,6 @@
 # Callot
 
-![callot overview](docs/callot.png)
+<img src="docs/callot.png" alt="callot overview" width="250" />
 
 Callot is a command line application for calculating trading lot sizes based on
 predefined risk settings. It stores its configuration in
