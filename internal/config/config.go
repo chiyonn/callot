@@ -19,10 +19,10 @@ type Config struct {
   PrimaryCurrency string   `json:"primaryCurrency"`
 }
 
-var defaultPath = filepath.Join(os.Getenv("HOME"), ".config", "callot", "config.json")
+var configFilePath = filepath.Join(os.Getenv("HOME"), ".config", "callot", "config.json")
 
 func Load() (*Config, error) {
-  data, err := os.ReadFile(defaultPath)
+  data, err := os.ReadFile(configFilePath)
   if err != nil {
     if errors.Is(err, os.ErrNotExist) {
       return &Config{Margin: 0, Pairs: []string{}}, nil // initialize with empty list
@@ -44,7 +44,7 @@ func Load() (*Config, error) {
 }
 
 func Save(cfg *Config) error {
-  dir := filepath.Dir(defaultPath)
+  dir := filepath.Dir(configFilePath)
   if err := os.MkdirAll(dir, 0755); err != nil {
     return err
   }
@@ -54,5 +54,5 @@ func Save(cfg *Config) error {
     return err
   }
 
-  return os.WriteFile(defaultPath, data, 0644)
+  return os.WriteFile(configFilePath, data, 0644)
 }

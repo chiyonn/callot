@@ -12,80 +12,79 @@ import (
 )
 
 type Calculator struct {
-  cfg            *config.Config
-  riskTolerance  float64
-  allowedLossJPY float64
-  pair           *model.CurrencyPair
+  config        *config.Config
+  riskTolerance float64
+  maxLossJPY    float64
+  pair          *model.CurrencyPair
 }
 
-func New(cfg *config.Config) *Calculator {
-  c := &Calculator{
-    cfg: cfg,
+func New(conf *config.Config) *Calculator {
+  calc := &Calculator{
+    config: conf,
   }
 
-  if cfg.RiskTolerance > 0 {
-    c.riskTolerance = cfg.RiskTolerance
+  if conf.RiskTolerance > 0 {
+    calc.riskTolerance = conf.RiskTolerance
   } else {
-    c.riskTolerance = 0.01 // fallback default
+    calc.riskTolerance = 0.01 // fallback default
   }
 
-  c.allowedLossJPY = float64(cfg.Margin) * c.riskTolerance
+  calc.maxLossJPY = float64(conf.Margin) * calc.riskTolerance
 
-  pair, err := model.NewCurrencyPair(cfg.SelectedPair)
+  pair, err := model.NewCurrencyPair(conf.SelectedPair)
   if err != nil {
     fmt.Println("Invalid currency pair:", err)
-    return c
+    return calc
   }
 
-  c.pair = pair
-  return c
+  calc.pair = pair
+  return calc
 }
 
-func (c *Calculator) PrintAllowedLoss() {
-  if c.pair == nil {
+func (calc *Calculator) PrintAllowedLoss() {
+  if calc.pair == nil {
     fmt.Println("Currency pair not initialized.")
     return
   }
 
-  pipValue := c.pair.PipValue()
-  lossCutPips := c.cfg.LossCutPips
-  lossCutCurrency := float64(lossCutPips) * pipValue
+  pipValue := calc.pair.PipValue()
+  lossCutPips := calc.config.LossCutPips
+  lossCutAmount := float64(lossCutPips) * pipValue
 
-  if lossCutCurrency == 0 {
+  if lossCutAmount == 0 {
     fmt.Println("Invalid pips value.")
     return
   }
 
-  var tradableVolume float64
-  var convertedVolumeJPY float64
-  var rate float64
-  var quoteLabel string
+  var volumeJPY float64
+  var exchangeRate float64
+  var rateLabel string
 
-  tradableVolume = c.allowedLossJPY / lossCutCurrency
+  volume := calc.maxLossJPY / lossCutAmount
 
-  if c.pair.IsJPYQuoted() {
+  if calc.pair.IsJPYQuoted() {
     fmt.Println("========== Risk Summary (JPY-quoted) ==========")
   } else {
-    quoteCurrency := c.pair.Quote
+    quoteCurrency := calc.pair.Quote
     if quoteCurrency == "USD" {
-      quoteLabel = "USDJPY"
+      rateLabel = "USDJPY"
     } else {
-      quoteLabel = quoteCurrency + "JPY"
+      rateLabel = quoteCurrency + "JPY"
     }
 
-    rate = promptExchangeRate(quoteLabel)
-    convertedVolumeJPY = tradableVolume / rate
+    exchangeRate = promptExchangeRate(rateLabel)
+    volumeJPY = volume / exchangeRate
 
     fmt.Printf("========== Risk Summary (%s-quoted) ==========\n", quoteCurrency)
   }
 
-  fmt.Printf("Currency Pair     : %s\n", c.pair)
-  fmt.Printf("Allowed Loss      : %.0f JPY (%.2f%% of %d JPY)\n", c.allowedLossJPY, c.riskTolerance*100, c.cfg.Margin)
-  fmt.Printf("Loss-cut Width    : %d pips (%.4f %s)\n", lossCutPips, lossCutCurrency, c.pair.Quote)
-  fmt.Printf("Tradable Volume   : %.2f units\n", tradableVolume)
+  fmt.Printf("Currency Pair     : %s\n", calc.pair)
+  fmt.Printf("Allowed Loss      : %.0f JPY (%.2f%% of %d JPY)\n", calc.maxLossJPY, calc.riskTolerance*100, calc.config.Margin)
+  fmt.Printf("Loss-cut Width    : %d pips (%.4f %s)\n", lossCutPips, lossCutAmount, calc.pair.Quote)
+  fmt.Printf("Tradable Volume   : %.2f units\n", volume)
 
-  if !c.pair.IsJPYQuoted() {
-    fmt.Printf("→ In JPY units    : %.2f (using rate %.3f for %s)\n", convertedVolumeJPY, rate, quoteLabel)
+  if !calc.pair.IsJPYQuoted() {
+    fmt.Printf("→ In JPY units    : %.2f (using rate %.3f for %s)\n", volumeJPY, exchangeRate, rateLabel)
   }
 
   fmt.Println("===============================================")

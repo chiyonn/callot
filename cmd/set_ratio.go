@@ -20,15 +20,15 @@ var setRatioCmd = &cobra.Command{
       os.Exit(1)
     }
 
-    cfg, err := config.Load()
+    conf, err := config.Load()
     if err != nil {
       fmt.Println("Failed to load config:", err)
       os.Exit(1)
     }
 
-    cfg.TakeProfitRatio = ratio
+    conf.TakeProfitRatio = ratio
 
-    if err := config.Save(cfg); err != nil {
+    if err := config.Save(conf); err != nil {
       fmt.Println("Failed to save config:", err)
       os.Exit(1)
     }
