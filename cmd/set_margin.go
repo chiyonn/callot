@@ -33,7 +33,7 @@ var setMarginCmd = &cobra.Command{
       os.Exit(1)
     }
 
-    fmt.Printf("Margin set to %d%% (= %d JPY).\n", percent, cfg.Margin)
+    fmt.Printf("Margin set to %d (= %d JPY).\n", percent, cfg.Margin)
   },
 }
 
