@@ -20,22 +20,22 @@ var addPairCmd = &cobra.Command{
       os.Exit(1)
     }
 
-    cfg, err := config.Load()
+    conf, err := config.Load()
     if err != nil {
       fmt.Println("Failed to load config:", err)
       os.Exit(1)
     }
 
-    for _, p := range cfg.Pairs {
+    for _, p := range conf.Pairs {
       if p == symbol {
         fmt.Printf("Pair %s already exists.\n", symbol)
         return
       }
     }
 
-    cfg.Pairs = append(cfg.Pairs, symbol)
+    conf.Pairs = append(conf.Pairs, symbol)
 
-    if err := config.Save(cfg); err != nil {
+    if err := config.Save(conf); err != nil {
       fmt.Println("Failed to save config:", err)
       os.Exit(1)
     }

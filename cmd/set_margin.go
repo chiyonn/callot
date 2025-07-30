@@ -20,20 +20,20 @@ var setMarginCmd = &cobra.Command{
       os.Exit(1)
     }
 
-    cfg, err := config.Load()
+    conf, err := config.Load()
     if err != nil {
       fmt.Println("Failed to load config:", err)
       os.Exit(1)
     }
 
-    cfg.Margin = percent * 10000
+    conf.Margin = percent * 10000
 
-    if err := config.Save(cfg); err != nil {
+    if err := config.Save(conf); err != nil {
       fmt.Println("Failed to save config:", err)
       os.Exit(1)
     }
 
-    fmt.Printf("Margin set to %d (= %d JPY).\n", percent, cfg.Margin)
+    fmt.Printf("Margin set to %d (= %d JPY).\n", percent, conf.Margin)
   },
 }
 

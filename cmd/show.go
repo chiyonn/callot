@@ -11,20 +11,20 @@ var showCmd = &cobra.Command{
   Use:   "show",
   Short: "Display current configuration",
   Run: func(cmd *cobra.Command, args []string) {
-    cfg, err := config.Load()
+    conf, err := config.Load()
     if err != nil {
       fmt.Println("Failed to load config:", err)
       return
     }
 
     fmt.Println("Current Configuration:")
-    fmt.Printf("  Margin: %d (= %d JPY)\n", cfg.Margin/10000, cfg.Margin)
+    fmt.Printf("  Margin: %d (= %d JPY)\n", conf.Margin/10000, conf.Margin)
 
-    if len(cfg.Pairs) == 0 {
+    if len(conf.Pairs) == 0 {
       fmt.Println("  Currency Pairs: (none)")
     } else {
       fmt.Println("  Currency Pairs:")
-      for _, p := range cfg.Pairs {
+      for _, p := range conf.Pairs {
         fmt.Printf("    - %s\n", p)
       }
     }

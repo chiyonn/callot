@@ -20,20 +20,20 @@ var setRiskCmd = &cobra.Command{
       os.Exit(1)
     }
 
-    cfg, err := config.Load()
+    conf, err := config.Load()
     if err != nil {
       fmt.Println("Failed to load config:", err)
       os.Exit(1)
     }
 
-    cfg.RiskTolerance = percent / 100.0
+    conf.RiskTolerance = percent / 100.0
 
-    if err := config.Save(cfg); err != nil {
+    if err := config.Save(conf); err != nil {
       fmt.Println("Failed to save config:", err)
       os.Exit(1)
     }
 
-    fmt.Printf("Risk tolerance set to %.2f%% (%.4f internally)\n", percent, cfg.RiskTolerance)
+    fmt.Printf("Risk tolerance set to %.2f%% (%.4f internally)\n", percent, conf.RiskTolerance)
   },
 }
 
