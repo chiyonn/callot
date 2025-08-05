@@ -6,6 +6,7 @@ import (
   "strconv"
 
   "github.com/chiyonn/callot/internal/config"
+  appErrors "github.com/chiyonn/callot/internal/errors"
   "github.com/spf13/cobra"
 )
 
@@ -16,24 +17,22 @@ var setRiskCmd = &cobra.Command{
   Run: func(cmd *cobra.Command, args []string) {
     percent, err := strconv.ParseFloat(args[0], 64)
     if err != nil || percent <= 0 {
-      fmt.Println("Please provide a valid positive percentage (e.g. 1.6)")
+      fmt.Println(appErrors.NewValidationError("Please provide a valid positive percentage (e.g. 1.6)"))
       os.Exit(1)
     }
 
-    conf, err := config.Load()
+    riskTolerance := percent / 100.0
+    err = updateConfig(func(conf *config.Config) error {
+      conf.RiskTolerance = riskTolerance
+      return nil
+    })
+
     if err != nil {
-      fmt.Println("Failed to load config:", err)
+      fmt.Println(err)
       os.Exit(1)
     }
 
-    conf.RiskTolerance = percent / 100.0
-
-    if err := config.Save(conf); err != nil {
-      fmt.Println("Failed to save config:", err)
-      os.Exit(1)
-    }
-
-    fmt.Printf("Risk tolerance set to %.2f%% (%.4f internally)\n", percent, conf.RiskTolerance)
+    fmt.Printf("Risk tolerance set to %.2f%% (%.4f internally)\n", percent, riskTolerance)
   },
 }
 

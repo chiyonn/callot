@@ -4,6 +4,7 @@ import (
   "fmt"
 
   "github.com/chiyonn/callot/internal/config"
+  "github.com/chiyonn/callot/internal/constants"
   "github.com/spf13/cobra"
 )
 
@@ -18,7 +19,7 @@ var showCmd = &cobra.Command{
     }
 
     fmt.Println("Current Configuration:")
-    fmt.Printf("  Margin: %d (= %d JPY)\n", conf.Margin/10000, conf.Margin)
+    fmt.Printf("  Margin: %d (= %d JPY)\n", conf.Margin/constants.MarginMultiplier, conf.Margin)
 
     if len(conf.Pairs) == 0 {
       fmt.Println("  Currency Pairs: (none)")

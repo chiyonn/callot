@@ -6,6 +6,7 @@ import (
   "strconv"
 
   "github.com/chiyonn/callot/internal/config"
+  appErrors "github.com/chiyonn/callot/internal/errors"
   "github.com/spf13/cobra"
 )
 
@@ -16,20 +17,17 @@ var setRatioCmd = &cobra.Command{
   Run: func(cmd *cobra.Command, args []string) {
     ratio, err := strconv.Atoi(args[0])
     if err != nil || ratio < 1 {
-      fmt.Println("Please enter a positive integer (1 or higher).")
+      fmt.Println(appErrors.NewValidationError("Please enter a positive integer (1 or higher)"))
       os.Exit(1)
     }
 
-    conf, err := config.Load()
+    err = updateConfig(func(conf *config.Config) error {
+      conf.TakeProfitRatio = ratio
+      return nil
+    })
+
     if err != nil {
-      fmt.Println("Failed to load config:", err)
-      os.Exit(1)
-    }
-
-    conf.TakeProfitRatio = ratio
-
-    if err := config.Save(conf); err != nil {
-      fmt.Println("Failed to save config:", err)
+      fmt.Println(err)
       os.Exit(1)
     }
 

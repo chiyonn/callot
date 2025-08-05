@@ -3,11 +3,12 @@ package main
 import (
   "fmt"
   "os"
-  "strconv"
 
   "github.com/chiyonn/callot/cmd"
   "github.com/chiyonn/callot/internal/calculator"
   "github.com/chiyonn/callot/internal/config"
+  "github.com/chiyonn/callot/internal/constants"
+  "github.com/chiyonn/callot/internal/validation"
   "github.com/manifoldco/promptui"
 )
 
@@ -56,9 +57,13 @@ func selectCurrencyPair(cfg *config.Config) string {
 }
 
 func promptLossCutPips() int {
+  validator := validation.New()
   prompt := promptui.Prompt{
     Label:    "Enter loss-cut width (in pips)",
-    Validate: validatePositiveInt,
+    Validate: func(input string) error {
+      _, err := validator.PositiveInt(input)
+      return err
+    },
   }
 
   input, err := prompt.Run()
@@ -67,20 +72,24 @@ func promptLossCutPips() int {
     os.Exit(1)
   }
 
-  val, _ := strconv.Atoi(input)
+  val, _ := validator.PositiveInt(input)
   return val
 }
 
 func promptTakeProfitRatio(cfg *config.Config) int {
-  defaultRatio := 2
+  defaultRatio := constants.DefaultTakeProfitRatio
   if cfg.TakeProfitRatio > 0 {
     defaultRatio = cfg.TakeProfitRatio
   }
 
+  validator := validation.New()
   prompt := promptui.Prompt{
     Label:   fmt.Sprintf("Enter take-profit ratio (default: %d)", defaultRatio),
     Default: fmt.Sprintf("%d", defaultRatio),
-    Validate: validateTakeProfitRatio,
+    Validate: func(input string) error {
+      _, err := validator.TakeProfitRatio(input)
+      return err
+    },
   }
 
   input, err := prompt.Run()
@@ -89,25 +98,10 @@ func promptTakeProfitRatio(cfg *config.Config) int {
     os.Exit(1)
   }
 
-  val, _ := strconv.Atoi(input)
+  val, _ := validator.TakeProfitRatio(input)
   return val
 }
 
-func validatePositiveInt(input string) error {
-  n, err := strconv.Atoi(input)
-  if err != nil || n <= 0 {
-    return fmt.Errorf("Please enter a positive number")
-  }
-  return nil
-}
-
-func validateTakeProfitRatio(input string) error {
-  n, err := strconv.Atoi(input)
-  if err != nil || n < 1 {
-    return fmt.Errorf("Please enter a positive integer greater than or equal to 1")
-  }
-  return nil
-}
 
 func runCommand(args []string) {
   os.Args = append([]string{os.Args[0]}, args...)

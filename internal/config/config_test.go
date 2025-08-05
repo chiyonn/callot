@@ -1,6 +1,7 @@
 package config
 
 import (
+    "os"
     "path/filepath"
     "reflect"
     "testing"
@@ -8,7 +9,8 @@ import (
 
 func TestSaveAndLoad(t *testing.T) {
     tmp := t.TempDir()
-    configFilePath = filepath.Join(tmp, "config.json")
+    os.Setenv("CALLOT_CONFIG_PATH", filepath.Join(tmp, "config.json"))
+    defer os.Unsetenv("CALLOT_CONFIG_PATH")
 
     original := &Config{
         Margin:          100,
@@ -35,7 +37,8 @@ func TestSaveAndLoad(t *testing.T) {
 
 func TestLoadDefaultWhenMissing(t *testing.T) {
     tmp := t.TempDir()
-    configFilePath = filepath.Join(tmp, "config.json")
+    os.Setenv("CALLOT_CONFIG_PATH", filepath.Join(tmp, "config.json"))
+    defer os.Unsetenv("CALLOT_CONFIG_PATH")
 
     cfg, err := Load()
     if err != nil {

@@ -6,6 +6,8 @@ import (
   "strconv"
 
   "github.com/chiyonn/callot/internal/config"
+  "github.com/chiyonn/callot/internal/constants"
+  appErrors "github.com/chiyonn/callot/internal/errors"
   "github.com/spf13/cobra"
 )
 
@@ -16,24 +18,21 @@ var setMarginCmd = &cobra.Command{
   Run: func(cmd *cobra.Command, args []string) {
     percent, err := strconv.Atoi(args[0])
     if err != nil || percent <= 0 {
-      fmt.Println("Please provide a positive integer.")
+      fmt.Println(appErrors.NewValidationError("Please provide a positive integer"))
       os.Exit(1)
     }
 
-    conf, err := config.Load()
+    err = updateConfig(func(conf *config.Config) error {
+      conf.Margin = percent * constants.MarginMultiplier
+      return nil
+    })
+
     if err != nil {
-      fmt.Println("Failed to load config:", err)
+      fmt.Println(err)
       os.Exit(1)
     }
 
-    conf.Margin = percent * 10000
-
-    if err := config.Save(conf); err != nil {
-      fmt.Println("Failed to save config:", err)
-      os.Exit(1)
-    }
-
-    fmt.Printf("Margin set to %d (= %d JPY).\n", percent, conf.Margin)
+    fmt.Printf("Margin set to %d (= %d JPY).\n", percent, percent*constants.MarginMultiplier)
   },
 }
 

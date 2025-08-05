@@ -4,6 +4,8 @@ import (
   "errors"
   "fmt"
   "strings"
+
+  "github.com/chiyonn/callot/internal/constants"
 )
 
 type CurrencyPair struct {
@@ -12,7 +14,7 @@ type CurrencyPair struct {
 }
 
 func NewCurrencyPair(pair string) (*CurrencyPair, error) {
-  if len(pair) != 6 {
+  if len(pair) != constants.CurrencyPairLength {
     return nil, errors.New("invalid currency pair format (must be 6 letters)")
   }
 
@@ -32,9 +34,9 @@ func (cp *CurrencyPair) IsUSDQuoted() bool {
 
 func (cp *CurrencyPair) PipValue() float64 {
   if cp.IsJPYQuoted() {
-    return 0.01
+    return constants.JPYPipValue
   }
-  return 0.0001
+  return constants.DefaultPipValue
 }
 
 func (cp *CurrencyPair) String() string {

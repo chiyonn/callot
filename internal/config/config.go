@@ -19,10 +19,18 @@ type Config struct {
   PrimaryCurrency string   `json:"primaryCurrency"`
 }
 
-var configFilePath = filepath.Join(os.Getenv("HOME"), ".config", "callot", "config.json")
+// GetConfigPath returns the configuration file path
+// It checks CALLOT_CONFIG_PATH environment variable first
+func GetConfigPath() string {
+	if path := os.Getenv("CALLOT_CONFIG_PATH"); path != "" {
+		return path
+	}
+	return filepath.Join(os.Getenv("HOME"), ".config", "callot", "config.json")
+}
 
 func Load() (*Config, error) {
-  data, err := os.ReadFile(configFilePath)
+  configPath := GetConfigPath()
+  data, err := os.ReadFile(configPath)
   if err != nil {
     if errors.Is(err, os.ErrNotExist) {
       return &Config{Margin: 0, Pairs: []string{}}, nil // initialize with empty list
@@ -44,7 +52,8 @@ func Load() (*Config, error) {
 }
 
 func Save(cfg *Config) error {
-  dir := filepath.Dir(configFilePath)
+  configPath := GetConfigPath()
+  dir := filepath.Dir(configPath)
   if err := os.MkdirAll(dir, 0755); err != nil {
     return err
   }
@@ -54,5 +63,5 @@ func Save(cfg *Config) error {
     return err
   }
 
-  return os.WriteFile(configFilePath, data, 0644)
+  return os.WriteFile(configPath, data, 0644)
 }

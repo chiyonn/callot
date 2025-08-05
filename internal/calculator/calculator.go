@@ -1,14 +1,13 @@
 package calculator
 
 import (
-  "bufio"
-  "os"
-  "strconv"
-  "strings"
   "fmt"
 
   "github.com/chiyonn/callot/internal/config"
+  "github.com/chiyonn/callot/internal/constants"
+  "github.com/chiyonn/callot/internal/interfaces"
   "github.com/chiyonn/callot/internal/model"
+  "github.com/chiyonn/callot/internal/providers"
 )
 
 type Calculator struct {
@@ -16,17 +15,23 @@ type Calculator struct {
   riskTolerance float64
   maxLossJPY    float64
   pair          *model.CurrencyPair
+  rateProvider  interfaces.ExchangeRateProvider
 }
 
 func New(conf *config.Config) *Calculator {
+  return NewWithProvider(conf, providers.NewInteractiveRateProvider())
+}
+
+func NewWithProvider(conf *config.Config, provider interfaces.ExchangeRateProvider) *Calculator {
   calc := &Calculator{
-    config: conf,
+    config:       conf,
+    rateProvider: provider,
   }
 
   if conf.RiskTolerance > 0 {
     calc.riskTolerance = conf.RiskTolerance
   } else {
-    calc.riskTolerance = 0.01 // fallback default
+    calc.riskTolerance = constants.DefaultRiskTolerance
   }
 
   calc.maxLossJPY = float64(conf.Margin) * calc.riskTolerance
@@ -72,7 +77,12 @@ func (calc *Calculator) PrintAllowedLoss() {
       rateLabel = quoteCurrency + "JPY"
     }
 
-    exchangeRate = promptExchangeRate(rateLabel)
+    rate, err := calc.rateProvider.GetRate(rateLabel)
+    if err != nil {
+      fmt.Printf("Error getting exchange rate: %v\n", err)
+      return
+    }
+    exchangeRate = rate
     volumeJPY = volume / exchangeRate
 
     fmt.Printf("========== Risk Summary (%s-quoted) ==========\n", quoteCurrency)
@@ -90,18 +100,4 @@ func (calc *Calculator) PrintAllowedLoss() {
   fmt.Println("===============================================")
 }
 
-func promptExchangeRate(label string) float64 {
-  fmt.Printf("Enter current %s rate: ", label)
-  scanner := bufio.NewScanner(os.Stdin)
-  if scanner.Scan() {
-    input := strings.TrimSpace(scanner.Text())
-    rate, err := strconv.ParseFloat(input, 64)
-    if err == nil && rate > 0 {
-      return rate
-    }
-  }
-  fmt.Println("Invalid rate input.")
-  os.Exit(1)
-  return 0
-}
 
